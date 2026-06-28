@@ -150,6 +150,16 @@ class SubMConv3dFunction(Function):
         weight: torch.Tensor,
         bias: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
+        # Temporary workaround for mixed-precision mismatch
+        if feats.dtype != weight.dtype:
+            feats = feats.to(weight.dtype)
+        
+        if bias is not None and bias.dtype != weight.dtype:
+            bias = bias.to(weight.dtype)
+        feats = feats.contiguous()
+        weight = weight.contiguous()
+        if bias is not None:
+            bias = bias.contiguous()
         assert feats.is_contiguous(), "Input features should be contiguous"
         N = feats.shape[0]
         Co, Kw, Kh, Kd, Ci = weight.shape
