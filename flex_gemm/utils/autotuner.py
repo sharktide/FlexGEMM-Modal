@@ -14,8 +14,10 @@ from .. import (
     AUTOTUNE_CACHE_PATH,
 )
 
+CPU_SNAPSHOT = not torch.cuda.is_available()
 
 class TritonPersistentCacheAutotuner(triton.runtime.Autotuner):
+
     def __init__(
         self,
         fn,
@@ -32,23 +34,35 @@ class TritonPersistentCacheAutotuner(triton.runtime.Autotuner):
         use_cuda_graph=False,
         do_bench=None,
     ):
-        super().__init__(
-            fn,
-            arg_names,
-            configs,
-            key,
-            reset_to_zero,
-            restore_value,
-            pre_hook,
-            post_hook,
-            prune_configs_by,
-            warmup,
-            rep,
-            use_cuda_graph,
-            do_bench,
-        )
+        if torch.cuda.is_available():
+            super().__init__(...)
+            self._lazy = False
+        else:
+            self._lazy = True
+
+            self._init_args = (
+                fn,
+                arg_names,
+                configs,
+                key,
+                reset_to_zero,
+                restore_value,
+                pre_hook,
+                post_hook,
+                prune_configs_by,
+                warmup,
+                rep,
+                use_cuda_graph,
+                do_bench,
+            )
 
     def run(self, *args, **kwargs):
+        def _ensure_initialized(self):
+            if self._lazy:
+                super().__init__(*self._init_args)
+                self._lazy = False
+                del self._init_args
+        self._ensure_initialized()
         self.nargs = dict(zip(self.arg_names, args))
         used_cached_result = True
         if len(self.configs) > 1:
