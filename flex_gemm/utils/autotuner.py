@@ -68,13 +68,14 @@ class TritonPersistentCacheAutotuner(triton.runtime.Autotuner):
                 use_cuda_graph,
                 do_bench,
             )
-
+    def _ensure_initialized(self):
+        if not hasattr(self, "_lazy") or not self._lazy:
+            return
+    
+        super().__init__(*self._init_args)
+        self._lazy = False
+        del self._init_args
     def run(self, *args, **kwargs):
-        def _ensure_initialized(self):
-            if self._lazy:
-                super().__init__(*self._init_args)
-                self._lazy = False
-                del self._init_args
         self._ensure_initialized()
         self.nargs = dict(zip(self.arg_names, args))
         used_cached_result = True
