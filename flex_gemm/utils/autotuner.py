@@ -35,8 +35,21 @@ class TritonPersistentCacheAutotuner(triton.runtime.Autotuner):
         do_bench=None,
     ):
         if torch.cuda.is_available():
-            super().__init__(...)
-            self._lazy = False
+            super().__init__(
+                fn,
+                arg_names,
+                configs,
+                key,
+                reset_to_zero,
+                restore_value,
+                pre_hook,
+                post_hook,
+                prune_configs_by,
+                warmup,
+                rep,
+                use_cuda_graph,
+                do_bench,
+            )
         else:
             self._lazy = True
 
