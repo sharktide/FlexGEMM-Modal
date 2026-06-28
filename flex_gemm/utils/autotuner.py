@@ -49,6 +49,8 @@ class TritonPersistentCacheAutotuner(triton.runtime.Autotuner):
         )
 
     def run(self, *args, **kwargs):
+        if hasattr(super(), "_ensure_initialized"):
+            super()._ensure_initialized()
         self.nargs = dict(zip(self.arg_names, args))
         used_cached_result = True
         if len(self.configs) > 1:
